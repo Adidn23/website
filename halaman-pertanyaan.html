@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertanyaan Cinta</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            min-height: 100vh;
+            min-width: 100vw;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%);
+            overflow: hidden;
+        }
+        #center-content {
+            position: fixed;
+            left: 0; top: 0;
+            width: 100vw; height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+        #love-img-slot {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #e75480;
+            background: #fff0f6 url('111.jpg') center/cover no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 24px #e7548033;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        #love-img-slot span {
+            color: #e75480;
+            font-size: 2.5rem;
+            opacity: 0.3;
+        }
+        .question-text {
+            color: #e75480;
+            font-size: 2.2rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 48px;
+            max-width: 700px;
+            text-shadow: 0 2px 8px #fff6, 0 4px 16px #e7548033;
+            z-index: 2;
+            font-family: 'Dancing Script', cursive, sans-serif;
+            letter-spacing: 0.5px;
+        }
+        .btn-row {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 32px;
+            z-index: 2;
+        }
+        .btn-cinta {
+            padding: 18px 48px;
+            font-size: 1.3rem;
+            background: linear-gradient(90deg,#e75480,#ff6a88);
+            color: #fff;
+            border: none;
+            border-radius: 32px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 24px #e7548033;
+            transition: background 0.2s, transform 0.2s;
+            position: relative;
+        }
+        .btn-cinta:active {
+            transform: scale(0.97);
+        }
+        @media (max-width: 600px) {
+            .question-text { font-size: 1.1rem; }
+            .btn-cinta { font-size: 1rem; padding: 12px 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="center-content">
+        <label for="love-img-input" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;">
+            <div id="love-img-slot">
+                <span>&#10084;</span>
+            </div>
+            <input type="file" id="love-img-input" accept="image/*" style="display:none;" />
+            <!-- label removed -->
+        </label>
+        <div class="question-text" id="question-text">Maukah kamu selalu menjadi wanitaku dan menemani aku sampai kita tua dan selalu bersama?</div>
+        <div class="btn-row" id="btn-row">
+            <button class="btn-cinta" id="btn-mau">Mau</button>
+            <button class="btn-cinta" id="btn-tidak">Ogahh banget gweh</button>
+        </div>
+    </div>
+    <canvas id="love-rain" style="position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:0;pointer-events:none;"></canvas>
+    <canvas id="love-cursor" style="position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:3;pointer-events:none;"></canvas>
+    <script>
+    // Multi-step question/answer logic
+    const questionText = document.getElementById('question-text');
+    const btnRow = document.getElementById('btn-row');
+    let step = 1;
+    let animating = false;
+    let targetPos = null;
+    let animFrame = null;
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function tidakMauHandler() {
+        if (animating) return;
+        const rect = document.body.getBoundingClientRect();
+        const btnTidak = document.getElementById('btn-tidak');
+        const btnMau = document.getElementById('btn-mau');
+        const btnRect = btnTidak.getBoundingClientRect();
+        let newLeft, newTop;
+        do {
+            newLeft = Math.random() * (rect.width - btnRect.width - 20);
+            newTop = Math.random() * (rect.height - btnRect.height - 20);
+        } while (btnMau && Math.abs(newLeft - btnMau.offsetLeft) < 60);
+        btnTidak.style.position = 'fixed';
+        if (!targetPos) {
+            targetPos = {
+                left: btnRect.left,
+                top: btnRect.top
+            };
+        }
+        const start = { left: targetPos.left, top: targetPos.top };
+        const end = { left: newLeft, top: newTop };
+        let t = 0;
+        animating = true;
+        function animateMove() {
+            t += 0.04;
+            if (t >= 1) t = 1;
+            const curLeft = lerp(start.left, end.left, t);
+            const curTop = lerp(start.top, end.top, t);
+            btnTidak.style.left = curLeft + 'px';
+            btnTidak.style.top = curTop + 'px';
+            if (t < 1) {
+                animFrame = requestAnimationFrame(animateMove);
+            } else {
+                targetPos = { left: end.left, top: end.top };
+                animating = false;
+            }
+        }
+        animateMove();
+    }
+
+    function reattachTidakMau() {
+        const btnTidak = document.getElementById('btn-tidak');
+        if (btnTidak) btnTidak.addEventListener('mouseenter', tidakMauHandler);
+    }
+
+    function reattachMau() {
+        const btnMau = document.getElementById('btn-mau');
+        if (btnMau) btnMau.addEventListener('click', mauHandler);
+    }
+
+    function mauHandler() {
+        if (step === 1) {
+            // Step 2: Janji
+            questionText.textContent = "Janji yaa hubungan ini gaakan pernah berakhir sampai impian kecil kita tercapai...";
+            btnRow.innerHTML = `
+                <button class=\"btn-cinta\" id=\"btn-mau\">Iyaa sayangg aku janji</button>
+                <button class=\"btn-cinta\" id=\"btn-tidak\">Tidak mau</button>
+            `;
+            step = 2;
+            reattachMau();
+            reattachTidakMau();
+        } else if (step === 2) {
+            // Step 3: Sayang banget
+            questionText.textContent = "Aku sayanngggg bangeett sama kamu, kalau kamu berpikiran lagi kalau putus lebih baik tolong ingat momen dan perasaan kamu saat ini serta semua kenangan indah kita. Aku menjalin hubungan sama kamu bukan untuk putus tapi untuk bersama sampai tua";
+            btnRow.innerHTML = `
+                <button class=\"btn-cinta\" id=\"btn-lanjut\">Lanjut</button>
+            `;
+            step = 3;
+            document.getElementById('btn-lanjut').addEventListener('click', function() {
+                window.location.href = 'menu.html';
+            });
+        }
+    }
+
+    // Initial attach
+    reattachMau();
+    reattachTidakMau();
+
+    // Reset button position on resize or step change
+    window.addEventListener('resize', function() {
+        const btnTidak = document.getElementById('btn-tidak');
+        if (btnTidak) {
+            btnTidak.style.position = '';
+            btnTidak.style.left = '';
+            btnTidak.style.top = '';
+        }
+        targetPos = null;
+    });
+
+    // Slot gambar love
+    const loveImgInput = document.getElementById('love-img-input');
+    const loveImgSlot = document.getElementById('love-img-slot');
+    // Upload photo is disabled
+    loveImgInput.addEventListener('change', function(e) {
+        loveImgInput.value = '';
+    });
+    loveImgSlot.addEventListener('click', function(e) {
+        e.preventDefault();
+    });
+
+    // Disable drag/drop and paste for the image slot
+    loveImgSlot.addEventListener('dragover', e => e.preventDefault());
+    loveImgSlot.addEventListener('drop', e => e.preventDefault());
+    loveImgSlot.addEventListener('paste', e => e.preventDefault());
+
+    // Love rain effect (thin, less dense)
+    const rainCanvas = document.getElementById('love-rain');
+    const rainCtx = rainCanvas.getContext('2d');
+    let rainW = window.innerWidth;
+    let rainH = window.innerHeight;
+    rainCanvas.width = rainW;
+    rainCanvas.height = rainH;
+    window.addEventListener('resize', ()=>{
+        rainW = window.innerWidth;
+        rainH = window.innerHeight;
+        rainCanvas.width = rainW;
+        rainCanvas.height = rainH;
+        // Recreate loves for new width
+        loves = [];
+        for(let i=0;i<loveCount();i++) {
+            let love = {};
+            resetLove(love);
+            love.delay = Math.random() * 1000;
+            loves.push(love);
+        }
+    });
+    function loveCount() {
+        return Math.max(10, Math.floor(rainW / 80)); // much thinner
+    }
+    let loves = [];
+    function resetLove(love) {
+        love.x = Math.random() * rainW;
+        love.y = rainH + Math.random() * 60;
+        love.size = 14 + Math.random() * 7;
+        love.speed = 1.1 + Math.random() * 1.1;
+        love.alpha = 0.6 + Math.random() * 0.3;
+    }
+    for(let i=0;i<loveCount();i++) {
+        let love = {};
+        resetLove(love);
+        love.delay = Math.random() * 1000;
+        loves.push(love);
+    }
+    function drawLove(x, y, size, alpha, ctx) {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(x, y);
+        ctx.rotate(Math.PI/8);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(0, -size/2, size, -size/2, size, 0);
+        ctx.bezierCurveTo(size, size/1.5, 0, size*0.9, 0, size);
+        ctx.bezierCurveTo(0, size*0.9, -size, size/1.5, -size, 0);
+        ctx.bezierCurveTo(-size, -size/2, 0, -size/2, 0, 0);
+        ctx.closePath();
+        ctx.fillStyle = '#ff6a88';
+        ctx.shadowColor = '#e75480';
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.restore();
+    }
+    function animateRain() {
+        rainCtx.clearRect(0,0,rainW,rainH);
+        for(let i=0;i<loves.length;i++) {
+            let love = loves[i];
+            if(love.delay > 0) { love.delay -= 16; continue; }
+            love.y -= love.speed;
+            let fade = 1;
+            if(love.y < rainH/2) fade = (love.y/(rainH/2));
+            drawLove(love.x, love.y, love.size, love.alpha * fade, rainCtx);
+            if(love.y < rainH/2 - 20) resetLove(love);
+        }
+        requestAnimationFrame(animateRain);
+    }
+    animateRain();
+
+    // Love trail cursor animation
+    const cursorCanvas = document.getElementById('love-cursor');
+    const cursorCtx = cursorCanvas.getContext('2d');
+    let cursorW = window.innerWidth;
+    let cursorH = window.innerHeight;
+    cursorCanvas.width = cursorW;
+    cursorCanvas.height = cursorH;
+    window.addEventListener('resize', ()=>{
+        cursorW = window.innerWidth;
+        cursorH = window.innerHeight;
+        cursorCanvas.width = cursorW;
+        cursorCanvas.height = cursorH;
+    });
+    let trail = [];
+    document.body.style.cursor = 'default';
+    document.addEventListener('mousemove', function(e) {
+        trail.push({x: e.clientX, y: e.clientY, alpha: 1, size: 16 + Math.random()*6});
+        if(trail.length > 18) trail.shift();
+    });
+    function drawCursorTrail() {
+        cursorCtx.clearRect(0,0,cursorW,cursorH);
+        for(let i=0;i<trail.length;i++) {
+            let t = trail[i];
+            drawLove(t.x, t.y, t.size, t.alpha, cursorCtx);
+            t.alpha -= 0.04;
+        }
+        trail = trail.filter(t => t.alpha > 0);
+        requestAnimationFrame(drawCursorTrail);
+    }
+    drawCursorTrail();
+    </script>
+</body>
+<script src="music.js"></script>
+</html>
