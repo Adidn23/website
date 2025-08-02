@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Full Page PNG</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
+      background: #fff;
+    }
+    body {
+      background: #fffbe7;
+    }
+    .bg-photo {
+      position: fixed;
+      left: 0; top: 0;
+      width: 100vw; height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+      filter: brightness(0.93) blur(1px);
+    }
+    #album-container {
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
+      z-index: 2;
+      pointer-events: none;
+    }
+    #camera-anim-container, #album-content { pointer-events: auto; }
+    #camera-anim-container {
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%,-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #camera-icon {
+      transition: filter 0.3s;
+      perspective: 800px;
+    }
+    #camera-icon:active {
+      filter: drop-shadow(0 8px 32px #bfa76f55);
+    }
+    #camera-caption {
+      transition: opacity 0.5s;
+    }
+    #camera-svg {
+      will-change: transform;
+    }
+    #album-content {
+      animation: fadeIn 0.7s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: none; }
+    }
+    #album-photos img {
+      width: 120px; height: 120px; object-fit: cover;
+      border-radius: 16px; box-shadow: 0 2px 12px #bfa76f33;
+      border: 3px solid #ffe0b2;
+      background: #fff;
+    }
+    @keyframes notifIn {
+      from { opacity: 0; transform: translateY(-40px) scale(0.8); }
+      to { opacity: 1; transform: none; }
+    }
+    #page-fade-overlay {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      background: linear-gradient(120deg,#fffbe7 60%,#ffe0b2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 1.2s cubic-bezier(.7,1.7,.5,1);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <img src="WhatsApp Image 2025-08-02 at 15.58.07_ba837a52.jpg" class="bg-photo" alt="Background">
+  <div id="album-container">
+    <div id="camera-anim-container">
+      <div id="camera-icon" style="width:130px;height:130px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;perspective:800px;">
+        <svg id="camera-svg" width="120" height="90" viewBox="0 0 120 90" style="transition:transform 1.2s cubic-bezier(.7,1.7,.5,1);">
+          <rect x="10" y="25" width="100" height="50" rx="12" fill="#222" stroke="#888" stroke-width="3"/>
+          <rect x="40" y="15" width="40" height="20" rx="8" fill="#444" stroke="#888" stroke-width="2"/>
+          <circle cx="60" cy="50" r="18" fill="#b3e5fc" stroke="#1976d2" stroke-width="4"/>
+          <circle cx="60" cy="50" r="10" fill="#fff" opacity="0.7"/>
+          <rect x="90" y="38" width="10" height="8" rx="2" fill="#ffd600" stroke="#888" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div id="camera-caption" style="text-align:center;margin-top:18px;color:#fff;font-family:'Dancing Script',cursive;font-size:1.3rem;transition:color 0.3s;">Klik kamera untuk melihat foto</div>
+      <div id="photo-reveal" style="display:none;flex-direction:column;align-items:center;margin-top:24px;gap:18px;width:100vw;max-width:100vw;">
+        <div id="photo-slider-wrapper" style="overflow:hidden;width:100vw;max-width:100vw;">
+          <div id="photo-slider" style="display:flex;align-items:center;transition:transform 2.2s cubic-bezier(.7,1.7,.5,1);will-change:transform;"></div>
+        </div>
+        <div id="typing-message" style="min-height:48px;margin-top:24px;font-size:1.25rem;color:#fff;font-family:'Dancing Script',cursive;text-align:center;letter-spacing:1px;opacity:0;transition:opacity 0.7s;"></div>
+        <div id="photo-nav" style="display:none;opacity:0;justify-content:center;gap:32px;margin-top:10px;">
+          <button id="photo-back" style="padding:10px 28px;font-size:1.1rem;border-radius:8px;border:none;background:#ffe0b2;color:#a67c3c;font-weight:bold;box-shadow:0 2px 8px #bfa76f22;cursor:pointer;">Back</button>
+          <button id="photo-next" style="padding:10px 28px;font-size:1.1rem;border-radius:8px;border:none;background:#ffe0b2;color:#a67c3c;font-weight:bold;box-shadow:0 2px 8px #bfa76f22;cursor:pointer;">Next</button>
+        </div>
+      </div>
+      <div id="notif-popup" style="display:none;position:fixed;top:32px;right:32px;z-index:9999;min-width:260px;max-width:90vw;padding:24px 28px 18px 28px;background:#fffbe7;border-radius:18px;box-shadow:0 8px 32px #bfa76f55,0 0.5px 0 #ffe0b2;border:2.5px solid #ffe0b2;animation: notifIn 0.7s cubic-bezier(.7,1.7,.5,1);">
+        <div style="font-size:1.2rem;color:#a67c3c;font-family:'Dancing Script',cursive;margin-bottom:12px;text-align:center;">Mau main game tidaa???<br><span style='font-size:1.05rem;color:#bfa76f;'>susah lhoo</span></div>
+        <div style="display:flex;gap:18px;justify-content:center;">
+          <button id="notif-yes" style="padding:8px 22px;font-size:1.1rem;border-radius:8px;border:none;background:#e75480;color:#fff;font-weight:bold;box-shadow:0 2px 8px #bfa76f22;cursor:pointer;">MAUU!!</button>
+          <button id="notif-no" style="padding:8px 22px;font-size:1.1rem;border-radius:8px;border:none;background:#bfa76f;color:#fff;font-weight:bold;box-shadow:0 2px 8px #bfa76f22;cursor:pointer;">Ga ahh males</button>
+        </div>
+      </div>
+    </div>
+    <div id="album-content" style="display:none;">
+      <div style="text-align:center;margin-top:24px;">
+        <label style="font-size:1.2rem;color:#bfa76f;">Unggah foto-foto kenangan (maks 20 foto, 1 halaman 1 foto):</label><br>
+        <input type="file" id="album-upload" accept="image/*" multiple style="margin:16px 0;">
+      </div>
+      <div id="album-pages" style="display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:16px;">
+        <div id="album-photo-page" style="width:380px;height:220px;display:flex;align-items:center;justify-content:center;background:#fffbe7;border-radius:12px;box-shadow:0 2px 12px #bfa76f33;border:2px solid #ffe0b2;"></div>
+        <div style="margin-top:18px;display:flex;gap:24px;">
+          <button id="prev-page" style="padding:10px 24px;font-size:1.1rem;border-radius:8px;border:none;background:#ffe0b2;color:#a67c3c;font-weight:bold;box-shadow:0 2px 8px #bfa76f22;cursor:pointer;">&lt; Prev</button>
+          <span id="page-indicator" style="font-size:1.1rem;color:#a67c3c;font-weight:bold;">1 / 20</span>
+          <button id="next-page" style="padding:10px 24px;font-size:1.1rem;border-radius:8px;border:none;background:#ffe0b2;color:#a67c3c;font-weight:bold;box-shadow:0 2px 8px #bfa76f22;cursor:pointer;">Next &gt;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="page-fade-overlay" style="position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:9999;background:linear-gradient(120deg,#fffbe7 60%,#ffe0b2 100%);display:flex;align-items:center;justify-content:center;transition:opacity 1.2s cubic-bezier(.7,1.7,.5,1);opacity:1;">
+    <div style="text-align:center;">
+      <div style="font-family:'Dancing Script',cursive;font-size:2.3rem;color:#e75480;text-shadow:0 2px 12px #fffbe7,0 1px 0 #bfa76f;font-weight:bold;letter-spacing:2px;">Selamat Datang di Album Kenangan</div>
+      <div style="margin-top:18px;font-size:1.2rem;color:#a67c3c;font-family:'Quicksand',sans-serif;">Klik kamera untuk melihat momen-momen indah bersama</div>
+    </div>
+  </div>
+  <script>
+    // Entry animation overlay
+    window.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        const fade = document.getElementById('page-fade-overlay');
+        fade.style.opacity = 0;
+        setTimeout(()=>{ fade.style.display = 'none'; }, 1200);
+      }, 2000);
+    });
+    const cameraIcon = document.getElementById('camera-icon');
+    const cameraSvg = document.getElementById('camera-svg');
+    const cameraCaption = document.getElementById('camera-caption');
+    const photoReveal = document.getElementById('photo-reveal');
+    const photoSlider = document.getElementById('photo-slider');
+    const photoSliderWrapper = document.getElementById('photo-slider-wrapper');
+    const photoNav = document.getElementById('photo-nav');
+    const photoBack = document.getElementById('photo-back');
+    const photoNext = document.getElementById('photo-next');
+    const albumContent = document.getElementById('album-content');
+    const albumUpload = document.getElementById('album-upload');
+    const albumPages = document.getElementById('album-pages');
+    const albumPhotoPage = document.getElementById('album-photo-page');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const pageIndicator = document.getElementById('page-indicator');
+    let currentPage = 1;
+    let photoFiles = [];
+    const maxPages = 20;
+    let photoShown = false;
+    let photoList = [
+      '1.jpg',
+      '2.jpg',
+      '3.jpg',
+      '4.jpg',
+      '5.jpg',
+      '6.jpg'
+    ];
+    let sliderInterval = null;
+    function showPhotoSlider() {
+      photoSlider.innerHTML = '';
+      const typingMsg = document.getElementById('typing-message');
+      typingMsg.textContent = '';
+      typingMsg.style.opacity = 0;
+      // Duplicate photoList for infinite loop effect
+      const allPhotos = photoList.concat(photoList);
+      for (let i = 0; i < allPhotos.length; i++) {
+        const img = document.createElement('img');
+        img.src = allPhotos[i % photoList.length];
+        img.style.width = '340px';
+        img.style.height = '220px';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '18px';
+        img.style.boxShadow = '0 4px 32px #bfa76f55';
+        img.style.border = '4px solid #fffbe7';
+        img.style.marginRight = '32px';
+        img.style.background = '#fff';
+        img.style.opacity = '0';
+        img.style.transform = 'scale(0.7) translateY(60px)';
+        img.style.transition = 'opacity 0.7s cubic-bezier(.7,1.7,.5,1), transform 0.7s cubic-bezier(.7,1.7,.5,1)';
+        setTimeout(()=>{
+          img.style.opacity = '1';
+          img.style.transform = 'scale(1) translateY(0)';
+        }, 200 + (i%photoList.length)*180);
+        photoSlider.appendChild(img);
+      }
+      // Infinite faster scroll
+      let pos = 0;
+      const imgW = 340+32;
+      const totalW = imgW * photoList.length;
+      if (sliderInterval) clearInterval(sliderInterval);
+      photoSlider.style.transform = `translateX(0px)`;
+      sliderInterval = setInterval(()=>{
+        pos -= 0.6; // faster
+        if (Math.abs(pos) >= totalW) pos = 0;
+        photoSlider.style.transform = `translateX(${pos}px)`;
+      }, 16);
+      // Typing animation after all images are visible
+      setTimeout(()=>{
+        typeMessageSequence();
+      }, 200 + (photoList.length-1)*180 + 700);
+    }
+    function typeMessageSequence() {
+      const el = document.getElementById('typing-message');
+      const messages = [
+        'Terimakasih yaa atas kebaiakan dan kasih sayang kamu selama ini.....Aku bahagia banget bisa sama kamu',
+        'Rasa sayang aku ke kamu gabisa diukur lagi. kamu harus tau kalau aku selalu disini buat kamu, jadii jangan selalu menjadi wanita yang kuat dan mandiri yaa, di depan aku kamu boleh bersikap lemah dan manjaa banget ke aku okeyy <3',
+        'Aku malah sukaa kalau kamu manja ke aku, karena aku merasa kamu nyaman banget sama aku, dan kamu bisa menganggap aku sebagai rumah ternyaman mu',
+        'Terimakasih juga atas perubahan kamu selama ini. aku sangat mengapresiasi usaha kamu sayaanggg',
+        'kalau ada yang aku harus ubah pun bilang yaaa, kita tumbuh bersama okeyy, kita ciptakan standar hubungan kita sendiri seusai dengan apa yang kita mau jadi kita tak usah mengikuti orang lain',
+        'Akan aku usahakan segalanya buat kamu, dan aku harap aku telah menjadi pria terbaik yang pernah kamu temui',
+        'Jadiii......hanya aku satu satunya pria buat kamu cukup kann?? ajarkan aku cara menjadi pria yang kamu inginkan',
+        'Setelah semua yang telah kita lalui, aku harap kamu sekarang percaya ke aku kalau aku tulus dan serius sehingga kamu bisa memberikan seluruh hatimu AKU MAU KAMU SEUTUHNYA TANPA ADA YANG KURNG!! keluarkan saja sifat bucin mu itu sayangg aku suka dan akan ku tampung semuanya',
+        'Masih banyak yang ingin aku sampaikan tapi takut kelamaan ahhh wkwkwk',
+        'Masih ada slide seru lagiii jadiii lanjut ke step berikutnya aja ya gess',
+        'Ohh iyaaa, satu lagi......',
+        'Aku sayang kamu.........'
+      ];
+      let idx = 0;
+      function nextMsg() {
+        el.textContent = '';
+        el.style.opacity = 0;
+        setTimeout(()=>{
+          el.style.opacity = 1;
+          typeText(messages[idx], el, ()=>{
+            let hold = 2000;
+            if (idx === messages.length - 1) hold = 3000; // last message 3s
+            setTimeout(()=>{
+              el.style.opacity = 0;
+              setTimeout(()=>{
+                idx++;
+                if (idx < messages.length) {
+                  nextMsg();
+                } else {
+                  // After last message, fade in nav buttons
+                  const nav = document.getElementById('photo-nav');
+                  nav.style.display = 'flex';
+                  nav.style.transition = 'opacity 1s';
+                  setTimeout(()=>{
+                    nav.style.opacity = 1;
+                  }, 100);
+                }
+              }, 700);
+            }, hold);
+          });
+        }, 200);
+      }
+      nextMsg();
+    }
+    function typeText(msg, el, cb) {
+      let i = 0;
+      function type() {
+        if (i <= msg.length) {
+          el.textContent = msg.slice(0, i);
+          i++;
+          setTimeout(type, 32 + Math.random()*40);
+        } else if (cb) { cb(); }
+      }
+      type();
+    }
+    cameraIcon.addEventListener('click', function() {
+      if (photoShown) return;
+      cameraSvg.style.transform = 'rotateY(540deg) scale(1.1)';
+      cameraSvg.style.boxShadow = '0 8px 32px #bfa76f55';
+      cameraCaption.textContent = '';
+      setTimeout(()=>{
+        photoReveal.style.display = 'flex';
+        photoNav.style.display = 'none'; // keep hidden until last message
+        showPhotoSlider();
+      }, 1200);
+      photoShown = true;
+    });
+    photoNext && photoNext.addEventListener('click', function() {
+      // Show notification popup
+      const notif = document.getElementById('notif-popup');
+      notif.style.display = 'block';
+      notif.style.animation = 'notifIn 0.7s cubic-bezier(.7,1.7,.5,1)';
+      // Button listeners
+      document.getElementById('notif-yes').onclick = () => {
+        notif.style.display = 'none';
+        window.location.href = 'puzzle.html';
+      };
+      document.getElementById('notif-no').onclick = () => {
+        notif.style.display = 'none';
+        window.location.href = 'data.html';
+      };
+    });
+    photoBack && photoBack.addEventListener('click', function() {
+      // Animate slider out
+      const imgs = photoSlider.querySelectorAll('img');
+      imgs.forEach((img, i) => {
+        img.style.transition = 'opacity 0.6s, transform 0.7s cubic-bezier(.7,1.7,.5,1)';
+        setTimeout(()=>{
+          img.style.opacity = '0';
+          img.style.transform = 'scale(0.7) translateY(60px)';
+        }, i*60);
+      });
+      setTimeout(()=>{
+        photoReveal.style.display = 'none';
+        photoNav.style.display = 'none';
+        cameraCaption.textContent = 'Klik kamera untuk melihat foto';
+        cameraSvg.style.transform = '';
+        cameraSvg.style.boxShadow = '';
+        photoShown = false;
+        if (sliderInterval) clearInterval(sliderInterval);
+      }, 600 + imgs.length*60);
+    });
+    function showPage(page) {
+      albumPhotoPage.innerHTML = '';
+      if (photoFiles[page-1]) {
+        const img = document.createElement('img');
+        img.src = photoFiles[page-1];
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        img.style.borderRadius = '10px';
+        albumPhotoPage.appendChild(img);
+      } else {
+        albumPhotoPage.innerHTML = '<span style="color:#bfa76f;font-size:1.2rem;">(Halaman kosong)</span>';
+      }
+      pageIndicator.textContent = page + ' / ' + maxPages;
+      prevPageBtn.disabled = (page === 1);
+      nextPageBtn.disabled = (page === maxPages);
+    }
+    albumUpload && albumUpload.addEventListener('change', function(e) {
+      photoFiles = [];
+      let count = 0;
+      for (const file of e.target.files) {
+        if (file.type.startsWith('image/') && count < maxPages) {
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            photoFiles.push(evt.target.result);
+            if (photoFiles.length === Math.min(e.target.files.length, maxPages)) {
+              // User-uploaded photos will replace the default 6
+              photoList = photoFiles.slice(0, 6);
+              photoIndex = 0;
+              if (photoShown) showPhoto(photoIndex, 0);
+            }
+          };
+          reader.readAsDataURL(file);
+          count++;
+        }
+      }
+      // If no files, reset to default 6
+      if (e.target.files.length === 0) {
+        photoFiles = [];
+        photoList = [
+          'WhatsApp Image 2025-08-02 at 15.58.07_ba837a52.jpg',
+          'WhatsApp Image 2025-08-02 at 14.07.21_9e605491.jpg',
+          'WhatsApp Image 2025-08-02 at 15.58.07_ba837a52.jpg',
+          'WhatsApp Image 2025-08-02 at 14.07.21_9e605491.jpg',
+          'WhatsApp Image 2025-08-02 at 15.58.07_ba837a52.jpg',
+          'WhatsApp Image 2025-08-02 at 14.07.21_9e605491.jpg'
+        ];
+        photoIndex = 0;
+        if (photoShown) showPhoto(photoIndex, 0);
+      }
+    });
+    prevPageBtn && prevPageBtn.addEventListener('click', function() {
+      if (currentPage > 1) {
+        currentPage--;
+        showPage(currentPage);
+      }
+    });
+    nextPageBtn && nextPageBtn.addEventListener('click', function() {
+      if (currentPage < maxPages) {
+        currentPage++;
+        showPage(currentPage);
+      }
+    });
+    // Init
+    showPage(currentPage);
+  </script>
+</body>
+<script src="music.js"></script>
+</html>

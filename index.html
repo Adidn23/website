@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Login</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(255, 105, 135, 0.2);
+            padding: 40px 32px 32px 32px;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        /* Hapus .profile-pic, kembali ke SVG love */
+        .bear-corner {
+            position: fixed;
+            left: 18px;
+            bottom: 18px;
+            width: 300px;
+            height: 300px;
+            z-index: 100;
+            opacity: 0.92;
+        }
+        h2 {
+            color: #e75480;
+            margin-bottom: 18px;
+            font-weight: 700;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #e75480;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #fff0f6;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #e75480 0%, #ff6a88 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            box-shadow: 0 2px 8px rgba(231,84,128,0.15);
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #ff6a88 0%, #e75480 100%);
+        }
+        #error-message {
+            color: #e75480;
+            margin-top: 10px;
+            min-height: 20px;
+            font-size: 15px;
+        }
+        #success-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+        #success-container h1 {
+            color: #e75480;
+            font-size: 2.5rem;
+            margin: 0 0 12px 0;
+            font-weight: 800;
+        }
+        .couple-illustration {
+            width: 180px;
+            margin-bottom: 18px;
+        }
+        .love-quote {
+            color: #ff6a88;
+            font-size: 1.1rem;
+            margin-top: 8px;
+            font-style: italic;
+            text-align: justify;
+            max-width: 350px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .love-illustration {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 18px;
+            display: block;
+        }
+        @media (max-width: 500px) {
+            .container { min-width: 90vw; padding: 24px 8vw; }
+            .couple-illustration { width: 120px; }
+    }
+
+    /* Beating heart animation */
+    #beating-heart {
+        animation: heartbeat 1s infinite;
+        transform-origin: 50% 60%;
+        position: fixed;
+        right: 32px;
+        bottom: 24px;
+        width: 120px;
+        height: 120px;
+        z-index: 200;
+        display: none;
+        pointer-events: none;
+    }
+    @keyframes heartbeat {
+        0% { transform: scale(1); }
+        10% { transform: scale(1.12); }
+        20% { transform: scale(0.95); }
+        30% { transform: scale(1.1); }
+        40% { transform: scale(0.98); }
+        50% { transform: scale(1.08); }
+        60% { transform: scale(1); }
+        100% { transform: scale(1); }
+    }
+        
+
+    </style>
+</head>
+<body>
+    <div class="container" id="login-container">
+        <svg class="love-illustration" viewBox="0 0 64 64" fill="none">
+            <path d="M32 58s-22-13.3-22-30A12 12 0 0 1 32 14a12 12 0 0 1 22 14c0 16.7-22 30-22 30z" fill="#ff6a88" stroke="#e75480" stroke-width="2"/>
+        </svg>
+        <h2>Halo sayanggg &lt;3</h2>
+        <form id="login-form">
+            <input type="text" id="username" placeholder="Username" required autocomplete="off">
+            <input type="password" id="password" placeholder="password nya warna favorit aku" required autocomplete="off">
+            <button type="submit">Masuk</button>
+            <p id="error-message"></p>
+        </form>
+    </div>
+    <div class="container" id="success-container" style="display:none;">
+        <svg class="couple-illustration" viewBox="0 0 200 120" fill="none">
+            <ellipse cx="100" cy="110" rx="80" ry="10" fill="#ffe0ec"/>
+            <circle cx="70" cy="60" r="30" fill="#ffb6b9"/>
+            <circle cx="130" cy="60" r="30" fill="#fcd5ce"/>
+            <ellipse cx="70" cy="60" rx="18" ry="22" fill="#fff"/>
+            <ellipse cx="130" cy="60" rx="18" ry="22" fill="#fff"/>
+            <ellipse cx="70" cy="65" rx="7" ry="10" fill="#e75480"/>
+            <ellipse cx="130" cy="65" rx="7" ry="10" fill="#e75480"/>
+            <ellipse cx="70" cy="60" rx="3" ry="4" fill="#fff"/>
+            <ellipse cx="130" cy="60" rx="3" ry="4" fill="#fff"/>
+            <path d="M85 80 Q100 100 115 80" stroke="#e75480" stroke-width="3" fill="none"/>
+        </svg>
+        <h1>I love you</h1>
+        <div class="love-quote" id="love-quote">Haii bubs. pertamaa aku mau ucapinn selamat membaca dan pastikan kamu baca dengan hati yaww<br><br>
+            semoga kamu suka dan senang dengan web yang aku buat ini!!<br><br>
+            ohh iyaa klik menu tombol dibawah iniiii
+        </div>
+        <button id="next-btn" style="margin-top:24px; padding:10px 32px; font-size:1.1rem; background:linear-gradient(90deg,#e75480,#ff6a88); color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Lanjut &rarr;</button>
+    <div id="notif-confirm" style="display:none;position:fixed;top:32px;right:32px;z-index:9999;background:#fff0f6;border:2px solid #e75480;border-radius:16px;box-shadow:0 4px 24px #e7548033;padding:28px 32px 20px 32px;min-width:260px;max-width:90vw;">
+        <div style="color:#e75480;font-size:1.2rem;font-weight:700;margin-bottom:18px;text-align:center;">Yakin lanjut nihh?</div>
+        <div style="display:flex;gap:18px;justify-content:center;">
+            <button id="notif-yes" style="padding:10px 28px;font-size:1rem;background:linear-gradient(90deg,#e75480,#ff6a88);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Ya</button>
+            <button id="notif-no" style="padding:10px 28px;font-size:1rem;background:#fff0f6;color:#e75480;border:2px solid #e75480;border-radius:8px;font-weight:600;cursor:pointer;">Tidak</button>
+        </div>
+    </div>
+    </div>
+    <svg id="beating-heart" viewBox="0 0 64 64" fill="none" style="display:none;">
+        <path d="M32 58s-22-13.3-22-30A12 12 0 0 1 32 14a12 12 0 0 1 22 14c0 16.7-22 30-22 30z" fill="#ff2222" stroke="#b10000" stroke-width="2"/>
+    </svg>
+    <img src="5894d0d1980e40c853aded4091d90136-removebg-preview.png" alt="beruang" class="bear-corner" id="bear-img" />
+    <script>
+        // Sembunyikan gambar beruang di halaman selain login
+        function showBear(show) {
+            const bear = document.getElementById('bear-img');
+            if (bear) bear.style.display = show ? 'block' : 'none';
+        }
+        const form = document.getElementById('login-form');
+        const errorMessage = document.getElementById('error-message');
+        const loginContainer = document.getElementById('login-container');
+        const successContainer = document.getElementById('success-container');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Username bebas, hanya password yang dicek
+            const password = document.getElementById('password').value.trim().toLowerCase();
+            if(password === 'hitam putih' || password === 'hitam dan putih'|| password === 'hitamputih') {
+                // Sukses login, redirect ke logim.html
+                window.location.href = 'logim.html';
+            } else {
+                errorMessage.textContent = 'Password salah!';
+            }
+        });
+        // Tombol lanjut ke halaman berikutnya
+        document.addEventListener('DOMContentLoaded', function() {
+            const nextBtn = document.getElementById('next-btn');
+            const notif = document.getElementById('notif-confirm');
+            const notifYes = document.getElementById('notif-yes');
+            const notifNo = document.getElementById('notif-no');
+            if(nextBtn) {
+                nextBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    notif.style.display = 'block';
+                });
+            }
+            if(notifYes) {
+                notifYes.addEventListener('click', function() {
+                    window.location.href = 'halaman-pertanyaan.html';
+                });
+            }
+            if(notifNo) {
+                notifNo.addEventListener('click', function() {
+                    notif.style.display = 'none';
+                });
+            }
+            // Hide heart on load (in case of reload)
+            document.getElementById('beating-heart').style.display = 'none';
+        });
+    </script>
+<script src="music.js"></script>
+</body>
+</html>
